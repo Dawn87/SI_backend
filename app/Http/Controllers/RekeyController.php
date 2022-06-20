@@ -18,7 +18,7 @@ class RekeyController extends Controller
         $result = array();
         foreach($requester_list as $r){
             $pk = User::where('id', $r->requester_id)->value('pk');
-            $result[$r->id] = array($pk, $r->file_id);
+            $result[$r->id] = array($pk, $r->file_id, $r->requester_id);
         }
         return response()->json($result);
     }
@@ -32,5 +32,10 @@ class RekeyController extends Controller
         $info->rekey = $request->Rekey;
         $info->save(); 
         return response()->json('Success');
+    }
+    public function getNum()
+    {
+        $count = Rekey::where('rekey', '!=', '')->count();
+        return response()->json($count);
     }
 }

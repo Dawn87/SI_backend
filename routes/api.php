@@ -27,6 +27,8 @@ Route::post('/uploadEnc', [App\Http\Controllers\FileController::class, 'uploadEn
 Route::post('/requestFile', [App\Http\Controllers\FileController::class, 'requestFile']);
 Route::post('/uploadReEnc', [App\Http\Controllers\FileController::class, 'uploadReEnc']);
 Route::post('/downloadRe', [App\Http\Controllers\RefileController::class, 'downloadRe']);
+Route::post('/uploadBF', [App\Http\Controllers\FileController::class, 'uploadBF']);
+
 
 Route::post('/register', [App\Http\Controllers\MemberController::class, 'register']); //註冊
 Route::post('/login', [App\Http\Controllers\MemberController::class, 'login']); //登入
@@ -36,10 +38,14 @@ Route::get('/getRekeyList', [App\Http\Controllers\RekeyController::class, 'getRe
 Route::get('/getReEncFileList', [App\Http\Controllers\RefileController::class, 'getReEncFileList']); //ReEncFile
 Route::put('/updateRekey', [App\Http\Controllers\RekeyController::class, 'updateRekey']);
 Route::get('/getFileCount', [App\Http\Controllers\FileController::class, 'getFileCount']); 
-
+Route::get('/getNum', [App\Http\Controllers\RekeyController::class, 'getNum']);
 
 Route::get('/test', [App\Http\Controllers\FileController::class, 'testbloom']);
 Route::get('/rar', [App\Http\Controllers\FileController::class, 'rar']);
 Route::get('/ipfs', [App\Http\Controllers\FileController::class, 'ipfs']);
 Route::get('/ipfsget', [App\Http\Controllers\FileController::class, 'ipfsget']);
 Route::post('/uploadPRE', [App\Http\Controllers\FileController::class, 'uploadPRE']);
+
+// PRE oracle
+Route::post('/downloadIPFS', [App\Http\Controllers\FileController::class, 'downloadIPFS']);
+Route::post('/uploadIPFS', [App\Http\Controllers\FileController::class, 'uploadIPFS']);

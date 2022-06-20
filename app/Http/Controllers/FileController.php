@@ -518,10 +518,62 @@ class FileController extends Controller
             echo "fail";
         }
     }
+    public function downloadIPFS(Request $request)
+    {
+        Validator::make($request->all(), [
+            'path' => 'required',
+        ])->validate();
+        if ($request->path) {
+            $ipfs = new IPFS("localhost", "8080", "5001"); // leaving out the arguments will default to these values
+            $hash = $request->path;
+            $ipfs_file = $ipfs->get($hash);
+            if ($ipfs_file) {
+                $path = public_path('storage').'/ipfsGet/'.$hash.'.gz';
+                // 解壓縮
+                $phar = new PharData($path);
+                if($phar){
+                    $folder = time();
+                    $phar->extractTo(public_path('storage').'/ipfsGet/'.$folder);
+                    $file_path = '/ipfsGet/'.$folder.'/'.$hash;
+                    return Storage::disk('public')->download($file_path);
+                }
+                else
+                {
+                    return response()->json('Fail');
+                }
+            }
+            else {
+                return response()->json('No file');
+            }
+        } else 
+            return response()->json('No path');
+        
+    }
+    public function uploadIPFS(Request $request)
+    {
+        Validator::make($request->all(), [
+            'file' => 'required',
+        ])->validate();
+        if($request->hasFile('file')){
+            $fileName = time().'.'.$request->file->extension();
+            $request->file->move(public_path('storage').'/ReEnc/', $fileName);
+            $path = public_path('storage').'/ReEnc/'.$fileName;
+
+            $ipfs = new IPFS("localhost", "8080", "5001"); // leaving out the arguments will default to these values
+            $hash = $ipfs->addFromPath($path);
+            if ($hash)
+                return response()->json($hash);
+            else
+                return response()->json('Upload failed');
+        } else 
+            return response()->json('fail');
+        
+    }
     public function ipfsget()
     {
         $ipfs = new IPFS("localhost", "8080", "5001"); // leaving out the arguments will default to these values
-        $hash = "Qmd4yCe4gUrtKg9GFn1PpXtSn15bTDhX4thTtZUF2XaKtg";
+        //$hash = "Qmd4yCe4gUrtKg9GFn1PpXtSn15bTDhX4thTtZUF2XaKtg";
+        $hash = "QmX62DEHTS4mgoNvvqTHhNFpnfigL5qMkPKeubhHoaaGyF";
         //file:rar
         //$hash = "QmZdHaKfGbLgDGyq5rm7bD6f49eWS25mtQKnhYK7CDVGax";
         $ipfs_file = $ipfs->get($hash);
@@ -539,13 +591,13 @@ class FileController extends Controller
                 //$phar->decompress();
                 //$phar1 = new PharData(substr($path1, 0, -3));
                 $phar->extractTo(substr($path, 0, -3));
-                echo "success";
+                $path1 = '/ipfsGet/'.$hash.'/'.$hash;
+                echo $path1;
             }
             else
             {
                 echo "失敗";
             }
-            
         }
         else {
             echo "fail";
@@ -613,18 +665,24 @@ class FileController extends Controller
 
             $request->file->move(public_path('storage').'/Enc/', $fileName);
             $path = public_path('storage').'/Enc/'.$fileName;
-            //將檔案資訊新增進資料庫
-            $user_id = $request->ID;
-            $serBloom = $request->BloomFilter;
-            $user = User::find($user_id);
-            $user->files()->create(['name' => $fileName, 'path' => Str::after($path, public_path('storage')), 'bloom' => $serBloom]);
             
-            //Smart contract
-            $file_id =  File::where('name', $fileName)->value('id');
             $ipfs = new IPFS("localhost", "8080", "5001"); // leaving out the arguments will default to these values
-            $hash = $ipfs->addFromPath($path);
+            
+            if($ipfs) {
+                //將檔案資訊新增進資料庫
+                $user_id = $request->ID;
+                $serBloom = $request->BloomFilter;
+                $user = User::find($user_id);
+                $user->files()->create(['name' => $fileName, 'path' => Str::after($path, public_path('storage')), 'bloom' => $serBloom]);
+                
+                //Smart contract
+                $file_id =  File::where('name', $fileName)->value('id');
+                
+                $hash = $ipfs->addFromPath($path);
 
-            return response()->json('id0:'.$file_id.'uid:'.$user_id.'filename:'.$fileName.'path:'.$hash);
+                return response()->json('id0:'.$file_id.'uid:'.$user_id.'filename:'.$fileName.'path:'.$hash);
+            }
+            
             
             //return response()->json('Success.');
         }     
@@ -660,5 +718,27 @@ class FileController extends Controller
     {
         $count = File::select('id')->count();
         return response()->json($count);
+    }
+    public function uploadBF(Request $request)
+    {
+        Validator::make($request->all(), [
+            'file' => 'required',
+        ])->validate();
+        if($request->hasFile('file')){
+            $fileName = time().'.'.$request->file->extension();
+            $request->file->move(public_path('storage').'/bf/', $fileName);
+            $path = public_path('storage').'/bf/'.$fileName;
+            
+            $contents = file_get_contents($path);
+            $bloom = unserialize($contents);
+
+            $bl = json_encode($bloom);
+            $set = Str::between($bl, '"set":"', '","hashes');
+            return response()->json('Success.<br> Bloom filter:'.$set.'bf:'.$contents);
+        }     
+        else
+        {
+            return response()->json('上傳失敗');
+        }
     }
 }

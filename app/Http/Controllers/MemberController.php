@@ -19,7 +19,7 @@ class MemberController extends Controller
         $request->validate([
             'email' => ['required', 'string', 'email', 'max:255'],
             'password' => ['required', 'string', 'min:6', 'max:12'],
-            'pk' => ['required', 'string', 'min:130', 'max:130'],
+            'pk' => ['required', 'string', 'min:132', 'max:132'],
         ]);
 
 //        $apiToken = Str::random(10);
@@ -34,7 +34,9 @@ class MemberController extends Controller
 
         if ($create){
 //            return "Register as a fucknormal user. Your api token is $apiToken";
-            return response()->json('Success', 200);
+            $member = User::where('email', $request->email)->where('password', $request->password)->first();
+            $id = $member->id;
+            return response()->json($id);
         } else{
             return response()->json('Email已註冊', 200);
         }
