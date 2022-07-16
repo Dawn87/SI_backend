@@ -49,3 +49,5 @@ Route::post('/uploadPRE', [App\Http\Controllers\FileController::class, 'uploadPR
 // PRE oracle
 Route::post('/downloadIPFS', [App\Http\Controllers\FileController::class, 'downloadIPFS']);
 Route::post('/uploadIPFS', [App\Http\Controllers\FileController::class, 'uploadIPFS']);
+
+Route::get('/testhash', [App\Http\Controllers\FileController::class, 'testhash']);

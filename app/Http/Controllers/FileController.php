@@ -139,12 +139,16 @@ class FileController extends Controller
                     $ip_arr = explode("\r\n", $contents);
                     //Exception空行處理
                     $bloom = unserialize(Bloomfilter::first()->bloomfilter);
+                    $hash_arr = array();
                     foreach($ip_arr as $ip) {
                         if ($bloom->has($ip)) {
                             return response()->json('IP exists!'.$ip);
                         }
                         else {
                             $bloom->set($ip);
+                            $hash = hash('sha256', $ip);
+                            $bit = Str::substr($hash, 0, 8);
+                            array_push($hash_arr, $bit);
                         }
                     }
                     $serBloom = serialize($bloom);
@@ -156,7 +160,7 @@ class FileController extends Controller
 
                     $bl = json_encode($bloom);
                     $set = Str::between($bl, '"set":"', '","hashes');
-                    return response()->json('Success.<br> Bloom filter:'.$set.'bf:'.$serBloom);
+                    return response()->json('Success.<br> Bloom filter:'.$set.'bf:'.$serBloom.'hash:'.implode("",$hash_arr));
 
                 }
             } else {
@@ -335,9 +339,22 @@ class FileController extends Controller
                 $match_num = 0;
                 //$bloom = unserialize($allBloom[$i]->bloom);
                 $bloom = unserialize($data[$i]->{"2"});
+                //second level
+                $allhash = $data[$i]->{"3"};
+                $hash_arr = str_split($allhash, 8);
+                $match_hash = 0;
                 foreach ($ip as $ip_data) {
-                    if ($bloom->has($ip_data)) 
-                        $match_num+=1;
+                    if ($bloom->has($ip_data)){
+                        $match_num += 1;
+                        
+                        // compare hash
+                        $hash_ip = hash('sha256', $ip_data);
+                        $bit = Str::substr($hash_ip, 0, 8);
+                        foreach ($hash_arr as $hash) {
+                            if ($bit == $hash)
+                                $match_hash += 1;
+                        }
+                    }
                 }
                 if ($match_num != 0) {
                     $jsbl = json_encode($bloom);
@@ -345,7 +362,7 @@ class FileController extends Controller
                     //$match[$allBloom[$i]->id] = array($set, $allBloom[$i]->name);
                     $match[$i+1] = array($set, $data[$i]->{"1"});
                     //$match_proportion[$allBloom[$i]->id] = round(($match_num / count($ip))*100,2);
-                    $match_proportion[$i+1] = round(($match_num / count($ip))*100,2);
+                    $match_proportion[$i+1] = array(round(($match_num / count($ip))*100,2), round(($match_hash / $match_num)*100,2));
                 }
             }
             //大到小排序
@@ -667,8 +684,8 @@ class FileController extends Controller
             $path = public_path('storage').'/Enc/'.$fileName;
             
             $ipfs = new IPFS("localhost", "8080", "5001"); // leaving out the arguments will default to these values
-            
-            if($ipfs) {
+            $hash = $ipfs->addFromPath($path);
+            if($hash) {
                 //將檔案資訊新增進資料庫
                 $user_id = $request->ID;
                 $serBloom = $request->BloomFilter;
@@ -677,10 +694,11 @@ class FileController extends Controller
                 
                 //Smart contract
                 $file_id =  File::where('name', $fileName)->value('id');
-                
-                $hash = $ipfs->addFromPath($path);
 
                 return response()->json('id0:'.$file_id.'uid:'.$user_id.'filename:'.$fileName.'path:'.$hash);
+            }
+            else {
+                return response()->json('IPFS failed');
             }
             
             
@@ -730,15 +748,67 @@ class FileController extends Controller
             $path = public_path('storage').'/bf/'.$fileName;
             
             $contents = file_get_contents($path);
-            $bloom = unserialize($contents);
+            $obj = json_decode($contents);
+            $bf = $obj->bf;
+            $bloom = unserialize($bf);
 
             $bl = json_encode($bloom);
             $set = Str::between($bl, '"set":"', '","hashes');
-            return response()->json('Success.<br> Bloom filter:'.$set.'bf:'.$contents);
+            return response()->json('Success.<br> Bloom filter:'.$set.'object:'.$contents);
         }     
         else
         {
             return response()->json('上傳失敗');
         }
+    }
+    public function testhash()
+    {
+        $ip = '10.0.0.1';
+        $ip1 = '10.0.1.0';
+        $result = hash('sha256', $ip);
+        $result1 = hash('sha256', $ip1);
+        $hash = Str::substr($result, 0, 8);
+        $hash1 = Str::substr($result1, 0, 8);
+        echo $result;
+        echo '<br/>';
+        echo $result1;
+        echo '<br/>';
+        echo $hash;
+        echo '<br/>';
+        echo $hash1;
+        echo '<br/>';
+        $hash0 = $hash.$hash1;
+        echo $hash0;
+        echo '<br/>-------------</br>';
+        $test = str_split($hash0, 8);
+        print_r($test);
+        echo '<br>';
+        echo $test[1];
+        echo '<br>';        
+        echo count($test);
+        echo '<br/>';
+        $ar = array();
+        $ar[0] = array(50,15);
+        $ar[1] = array(60,10);
+        $ar[2] = array(20,0);
+        print_r($ar);
+        echo '<br/>';
+        arsort($ar);
+        print_r($ar);
+        echo '<br> match sort:';
+        $match_sort = array();
+        foreach ($ar as $key => $value) {
+            $match_sort[$key] = $ar[$key];
+        }
+        print_r($match_sort);
+        echo'<br>';
+        echo json_encode($match_sort);
+        $list = [];
+        foreach ($ar as $k => $v) {
+            array_push($list, array("key" => $k, "value" => $v));
+        }
+        echo '<br> list:';
+        print_r($list);
+        echo '<br>'. json_encode($list);
     }
 }
