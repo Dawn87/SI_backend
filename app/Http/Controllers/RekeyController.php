@@ -9,6 +9,7 @@ use App\Models\Rekey;
 
 class RekeyController extends Controller
 {
+    //取得特定ID的Rekey清單
     public function getRekeyList(Request $request)
     {
         Validator::make($request->all(), [
@@ -22,6 +23,7 @@ class RekeyController extends Controller
         }
         return response()->json($result);
     }
+    //儲存Rekey
     public function updateRekey(Request $request)
     {
         Validator::make($request->all(), [

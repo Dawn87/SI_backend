@@ -22,11 +22,8 @@ Route::post('/uploadSTIX', [App\Http\Controllers\FileController::class, 'uploadS
 Route::post('/upload', [App\Http\Controllers\FileController::class, 'upload']);
 Route::post('/updownSTIX', [App\Http\Controllers\FileController::class, 'updownSTIX']);
 Route::post('/updownTxt', [App\Http\Controllers\FileController::class, 'updownTxt']);
-Route::post('/download', [App\Http\Controllers\FileController::class, 'download']);
 Route::post('/uploadEnc', [App\Http\Controllers\FileController::class, 'uploadEnc']);
 Route::post('/requestFile', [App\Http\Controllers\FileController::class, 'requestFile']);
-Route::post('/uploadReEnc', [App\Http\Controllers\FileController::class, 'uploadReEnc']);
-Route::post('/downloadRe', [App\Http\Controllers\RefileController::class, 'downloadRe']);
 Route::post('/uploadBF', [App\Http\Controllers\FileController::class, 'uploadBF']);
 
 
@@ -35,19 +32,11 @@ Route::post('/login', [App\Http\Controllers\MemberController::class, 'login']); 
 Route::post('/logout', [App\Http\Controllers\MemberController::class, 'logout']); //登出
 Route::get('/getPK', [App\Http\Controllers\MemberController::class, 'getPK']); //Public key
 Route::get('/getRekeyList', [App\Http\Controllers\RekeyController::class, 'getRekeyList']); //Rekey
-Route::get('/getReEncFileList', [App\Http\Controllers\RefileController::class, 'getReEncFileList']); //ReEncFile
 Route::put('/updateRekey', [App\Http\Controllers\RekeyController::class, 'updateRekey']);
 Route::get('/getFileCount', [App\Http\Controllers\FileController::class, 'getFileCount']); 
 Route::get('/getNum', [App\Http\Controllers\RekeyController::class, 'getNum']);
-
-Route::get('/test', [App\Http\Controllers\FileController::class, 'testbloom']);
-Route::get('/rar', [App\Http\Controllers\FileController::class, 'rar']);
-Route::get('/ipfs', [App\Http\Controllers\FileController::class, 'ipfs']);
-Route::get('/ipfsget', [App\Http\Controllers\FileController::class, 'ipfsget']);
-Route::post('/uploadPRE', [App\Http\Controllers\FileController::class, 'uploadPRE']);
 
 // PRE oracle
 Route::post('/downloadIPFS', [App\Http\Controllers\FileController::class, 'downloadIPFS']);
 Route::post('/uploadIPFS', [App\Http\Controllers\FileController::class, 'uploadIPFS']);
 
-Route::get('/testhash', [App\Http\Controllers\FileController::class, 'testhash']);
