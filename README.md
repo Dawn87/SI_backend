@@ -27,6 +27,8 @@ DB_PASSWORD=YourPassword
 php artisan migrate
 php artisan db:seed --class=BloomfiltersTableSeeder
 ```
+## 建立storage:link
+```php artisan storage:link```
 ## 啟動服務
 ``` php artisan serve --port=8000 ```
 
