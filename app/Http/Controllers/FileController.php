@@ -1,7 +1,8 @@
 <?php
+
+namespace App\Http\Controllers;
 //linux
 //include_once(app_path() . '/Http/Controllers/bloomclass.php');
-namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
