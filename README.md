@@ -7,6 +7,30 @@
 <a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
 </p>
 
+# 重新建立 Laravel project
+## 還原 composer.json
+``` composer install --ignore-platform-reqs ```
+## 還原 packages.json
+``` npm install ```
+## 複製 .env.example .env
+``` cp .env.example .env ```
+## 修改 .env 檔內的設定，例如：
+```
+DB_DATABASE=YourDatabase
+DB_USERNAME=YourUserName
+DB_PASSWORD=YourPassword
+```
+##  取得 APP_KEY
+``` php artisan key:generate ```
+## 建立資料庫
+```
+php artisan migrate
+php artisan db:seed --class=BloomfiltersTableSeeder
+```
+## 啟動服務
+``` php artisan serve --port=8000 ```
+
+
 ## About Laravel
 
 Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
