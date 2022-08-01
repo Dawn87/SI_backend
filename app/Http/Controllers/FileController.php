@@ -1,5 +1,6 @@
 <?php
-
+//linux
+//include_once(app_path() . '/Http/Controllers/bloomclass.php');
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
@@ -504,6 +505,58 @@ class FileController extends Controller
                 return response()->json('Upload failed');
         } else 
             return response()->json('fail');
+    }
+    public function uploadPRE(Request $request)
+    {
+        Validator::make($request->all(), [
+            'file' => 'required',
+        ])->validate();
+        if($request->hasFile('file')){
+            $fileName = time().'.'.$request->file->extension();
+            if (strpos($fileName, ".rar") || strpos($fileName, ".zip") || strpos($fileName, ".txt") || strpos($fileName, ".json")) {
+                $request->file->move(public_path('storage').'/txt/', $fileName);
+                $path = public_path('storage').'/txt/'.$fileName;
+                if (strpos($fileName, ".rar")) {
+                    $rar = RarArchive::open($path);
+                    if($rar)
+                        $rar_entries = $rar->getEntries();
+                    if ($rar_entries === FALSE)
+                        return response()->json("Could not retrieve entries.");
+                    if (empty($rar_entries))
+                        return response()->json("No valid entries found.");
+
+                    $ip_arr = array();
+                    foreach($rar_entries as $entry) {
+                        $entry->extract(substr($path,0,-4));
+                        $stream = $entry->getStream();
+                        if ($stream === FALSE)
+                            return response()->json("Failed opening file:".$entry);
+                        else {
+                            $contents = stream_get_contents($stream);
+                            $ip_list = explode("\r\n", $contents);
+                            foreach ($ip_list as $ip)
+                                array_push($ip_arr, $ip);
+                        }
+                    }
+                    $rar->close();
+                    return($this->Bloom_arr($ip_arr));
+                } elseif (strpos($fileName, ".zip")) {
+                    $zip=new ZipArchive;
+                    echo "zip";
+                } elseif (strpos($fileName, ".txt") || strpos($fileName, ".json")) {
+                    $contents = file_get_contents($path);
+
+                    $js = json_encode($contents);
+                    return response()->json($js);
+                }
+            } else {
+                return response()->json('格式錯誤');
+            }
+        }     
+        else
+        {
+            return response()->json('上傳失敗');
+        }
     }
     //處理加密檔案
     public function uploadEnc(Request $request) 

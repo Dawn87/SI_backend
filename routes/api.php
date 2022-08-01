@@ -36,6 +36,8 @@ Route::put('/updateRekey', [App\Http\Controllers\RekeyController::class, 'update
 Route::get('/getFileCount', [App\Http\Controllers\FileController::class, 'getFileCount']); 
 Route::get('/getNum', [App\Http\Controllers\RekeyController::class, 'getNum']);
 
+Route::post('/uploadPRE', [App\Http\Controllers\FileController::class, 'uploadPRE']);
+
 // PRE oracle
 Route::post('/downloadIPFS', [App\Http\Controllers\FileController::class, 'downloadIPFS']);
 Route::post('/uploadIPFS', [App\Http\Controllers\FileController::class, 'uploadIPFS']);
