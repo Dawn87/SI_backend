@@ -597,6 +597,11 @@ class FileController extends Controller
             return response()->json('上傳失敗');
         }
     }
+    public function getFileCount()
+    {
+        $count = File::select('id')->count();
+        return response()->json($count);
+    }
     public function uploadBF(Request $request)
     {
         Validator::make($request->all(), [
